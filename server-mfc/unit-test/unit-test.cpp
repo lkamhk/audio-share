@@ -4,6 +4,7 @@
 #include "../updater-common/update_security.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <chrono>
 #include <cstdint>
@@ -137,30 +138,25 @@ namespace unittest
     TEST_CLASS(test_is_newer_version)
     {
     public:
-        TEST_METHOD(is_newer_version_arg0) {
-            try
-            {
-                util::is_newer_version("3.2.2", "v0.0.1");
-            }
-            catch (const std::exception&)
-            {
-                return;
-            }
-
-            Assert::Fail();
+        TEST_METHOD(is_newer_version_accepts_manifest_semver) {
+            Assert::IsTrue(util::is_newer_version("0.4.8", "0.4.7"));
+            Assert::IsTrue(util::is_newer_version("0.4.8", "v0.4.7"));
+            Assert::IsFalse(util::is_newer_version("v0.4.7", "0.4.8"));
         }
 
-        TEST_METHOD(is_newer_version_arg1) {
-            try
-            {
-                util::is_newer_version("v3.2.", "v0.0.");
+        TEST_METHOD(is_newer_version_rejects_invalid_versions) {
+            const std::array<std::string, 7> invalid_versions{
+                "", "v", "3.2", "v3.2.", "1.2.3.4", "1.two.3", "1.2.42949672960"
+            };
+            for (const auto& invalid : invalid_versions) {
+                try {
+                    (void)util::is_newer_version(invalid, "0.4.7");
+                }
+                catch (const std::invalid_argument&) {
+                    continue;
+                }
+                Assert::Fail(L"An invalid version was accepted.");
             }
-            catch (const std::exception&)
-            {
-                return;
-            }
-
-            Assert::Fail();
         }
 
         TEST_METHOD(is_newer_version_version0) {
