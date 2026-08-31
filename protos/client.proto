@@ -33,3 +33,16 @@ message AudioFormat
 	int32 channels = 2;
 	int32 sample_rate = 3;
 }
+
+message Capabilities
+{
+   uint32 protocol_version = 1;
+   uint32 max_datagram_bytes = 2;
+   uint32 retransmit_window_ms = 3;
+}
+
+message StreamConfig
+{
+   AudioFormat format = 1;
+   uint32 target_latency_ms = 2;
+}

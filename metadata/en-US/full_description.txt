@@ -1,3 +1,5 @@
 Audio Share can share Windows/Linux computer's audio to Android phone over network, so your phone becomes the speaker of computer. (You needn't buy a new speaker😄.)
 
-Usage and server program from <a href="https://github.com/mkckr0/audio-share">https://github.com/mkckr0/audio-share</a>
+Project page, downloads, and server program: <a href="https://github.com/lkamhk/audio-share">https://github.com/lkamhk/audio-share</a>
+
+Forked from <a href="https://github.com/mkckr0/audio-share">mkckr0/audio-share</a> and distributed under the Apache-2.0 license.

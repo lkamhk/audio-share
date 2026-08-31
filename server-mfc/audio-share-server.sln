@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unit-test", "unit-test\unit
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "audio-share-server", "audio-share-server\audio-share-server.vcxproj", "{37748964-0A4A-4E70-BAD3-A749B57321F8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "audio-share-updater", "audio-share-updater\audio-share-updater.vcxproj", "{B75A4DC8-B6C1-4FC1-AE35-9F04D56592F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -29,6 +31,12 @@ Global
 		{37748964-0A4A-4E70-BAD3-A749B57321F8}.Release|x64.Build.0 = Release|x64
 		{37748964-0A4A-4E70-BAD3-A749B57321F8}.Release|x86.ActiveCfg = Release|Win32
 		{37748964-0A4A-4E70-BAD3-A749B57321F8}.Release|x86.Build.0 = Release|Win32
+		{B75A4DC8-B6C1-4FC1-AE35-9F04D56592F1}.Debug|x64.ActiveCfg = Debug|x64
+		{B75A4DC8-B6C1-4FC1-AE35-9F04D56592F1}.Debug|x64.Build.0 = Debug|x64
+		{B75A4DC8-B6C1-4FC1-AE35-9F04D56592F1}.Debug|x86.ActiveCfg = Debug|x64
+		{B75A4DC8-B6C1-4FC1-AE35-9F04D56592F1}.Release|x64.ActiveCfg = Release|x64
+		{B75A4DC8-B6C1-4FC1-AE35-9F04D56592F1}.Release|x64.Build.0 = Release|x64
+		{B75A4DC8-B6C1-4FC1-AE35-9F04D56592F1}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

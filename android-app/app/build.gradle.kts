@@ -36,8 +36,8 @@ android {
         applicationId = "io.github.mkckr0.audio_share_app"
         minSdk = 23
         targetSdk = 35
-        versionCode = 3004
-        versionName = "0.3.4"
+        versionCode = 4008
+        versionName = "0.4.8"
         base.archivesName = "${rootProject.name}-$versionName"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -47,7 +47,7 @@ android {
             val keystoreProperties = Properties().apply {
                 load(rootProject.file("keystore.properties").inputStream())
             }
-            storeFile = file(keystoreProperties.getProperty("storeFile"))
+            storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
             keyAlias = keystoreProperties.getProperty("keyAlias")
             storePassword = keystoreProperties.getProperty("storePassword")
             keyPassword = keystoreProperties.getProperty("keyPassword")

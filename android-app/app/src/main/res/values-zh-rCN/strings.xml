@@ -7,12 +7,28 @@
     <!-- Home Screen -->
     <string name="label_host">主机</string>
     <string name="label_port">端口</string>
+    <string name="label_server_name">名称</string>
+    <string name="label_add_server">添加服务器</string>
+    <string name="label_format_mismatch">音频格式不匹配</string>
+    <string name="label_no_server_enabled">未启用服务器</string>
+    <string name="label_server_discovery">自动查找服务器</string>
+    <string name="label_scanning_local_network">正在扫描本地网络…</string>
+    <string name="label_no_server_found">未找到服务器，点击刷新重新扫描。</string>
+    <string name="label_servers_found">找到 %1$d 个服务器</string>
+    <string name="label_scan_again">重新扫描</string>
+    <string name="label_use_server">使用 %1$s</string>
+    <string name="label_saved_servers">已保存及已发现的服务器</string>
     <!-- Audio Screen -->
     <string name="label_audio_track">音轨</string>
     <string name="label_volume_linear_gain">音量（线性增益）</string>
     <string name="label_buffer_scale">缓冲区倍数（MinBufferSize 的倍数）</string>
     <string name="label_audio_effect">音效</string>
     <string name="label_loudness_enhancer">响度增强器</string>
+    <string name="label_loudness_warning">高增益可能触发设备限幅并产生可听失真。</string>
+    <string name="label_latency_profile">网络缓冲</string>
+    <string name="label_latency_low">低延迟（25 ms）</string>
+    <string name="label_latency_balanced">平衡（50 ms）</string>
+    <string name="label_latency_stable">稳定（100 ms）</string>
     <!-- Settings Screen -->
     <string name="label_auto_start">自动开始</string>
     <string name="label_auto_start_when_system_boots">当系统启动时自动播放</string>

@@ -1,40 +1,56 @@
 #include "util.hpp"
-#include <algorithm>
-#include <ranges>
+
+#include <array>
+#include <charconv>
+#include <stdexcept>
+#include <string_view>
+
+namespace {
+
+std::array<unsigned int, 3> parse_version(std::string_view version)
+{
+    if (version.starts_with('v')) {
+        version.remove_prefix(1);
+    }
+    if (version.empty()) {
+        throw std::invalid_argument("is_newer_version: bad arguments");
+    }
+
+    std::array<unsigned int, 3> result{};
+    for (std::size_t index = 0; index < result.size(); ++index) {
+        const auto separator = version.find('.');
+        const auto is_last = index + 1 == result.size();
+        if ((is_last && separator != std::string_view::npos) ||
+            (!is_last && separator == std::string_view::npos)) {
+            throw std::invalid_argument("is_newer_version: bad arguments");
+        }
+
+        const auto component = is_last ? version : version.substr(0, separator);
+        if (component.empty()) {
+            throw std::invalid_argument("is_newer_version: bad arguments");
+        }
+
+        const auto [end, error] = std::from_chars(
+            component.data(), component.data() + component.size(), result[index]
+        );
+        if (error != std::errc{} || end != component.data() + component.size()) {
+            throw std::invalid_argument("is_newer_version: bad arguments");
+        }
+
+        if (!is_last) {
+            version.remove_prefix(separator + 1);
+        }
+    }
+    return result;
+}
+
+} // namespace
 
 namespace util {
 
     bool is_newer_version(const std::string& lhs, const std::string& rhs)
     {
-        if (lhs.empty() || rhs.empty() || lhs[0] != 'v' || rhs[0] != 'v') {
-            throw std::exception("is_newer_version: bad arguments");
-        }
-
-        auto lhs_substrs = split_string(lhs.substr(1), '.');
-        auto rhs_substrs = split_string(rhs.substr(1), '.');
-
-        if (lhs_substrs.size() != 3 || rhs_substrs.size() != 3) {
-            throw std::exception("is_newer_version: bad arguments");
-        }
-
-        std::vector<int> lhs_vec, rhs_vec;
-        auto to_int = [&](const std::string& s) {
-            return std::stoi(s);
-            };
-        std::ranges::transform(lhs_substrs, std::back_inserter(lhs_vec), to_int);
-        std::ranges::transform(rhs_substrs, std::back_inserter(rhs_vec), to_int);
-
-        for (size_t i = 0; i < lhs_vec.size(); i++)
-        {
-            if (lhs_vec[i] == rhs_vec[i]) {
-                continue;
-            }
-            else {
-                return lhs_vec[i] > rhs_vec[i];
-            }
-        }
-
-        return false;
+        return parse_version(lhs) > parse_version(rhs);
     }
 
     // empty substring will be ignored

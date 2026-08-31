@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -41,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import io.github.mkckr0.audio_share_app.model.audioConfigDataStore
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -110,6 +112,42 @@ fun SliderConfig(
                 track = {
                     SliderDefaults.Track(it, drawTick = { _, _ -> })
                 },
+                modifier = Modifier.padding(top = 4.dp, start = 2.dp, end = 2.dp),
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun IntSliderConfig(
+    key: String,
+    title: String,
+    labels: List<String>,
+    defaultValue: Int,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val value = remember {
+        context.audioConfigDataStore.data.map { it[intPreferencesKey(key)] ?: defaultValue }
+    }.collectAsState(null).value
+    if (value != null) {
+        var tempValue by remember(value) { mutableIntStateOf(value.coerceIn(labels.indices)) }
+        Column(modifier = Modifier.padding(top = 12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(title, style = MaterialTheme.typography.bodyMedium)
+                Text(labels[tempValue], style = MaterialTheme.typography.bodyMedium)
+            }
+            Slider(
+                value = tempValue.toFloat(),
+                onValueChange = { tempValue = it.toInt().coerceIn(labels.indices) },
+                onValueChangeFinished = {
+                    scope.launch {
+                        context.audioConfigDataStore.edit { it[intPreferencesKey(key)] = tempValue }
+                    }
+                },
+                steps = (labels.size - 2).coerceAtLeast(0),
+                valueRange = 0f..labels.lastIndex.toFloat(),
                 modifier = Modifier.padding(top = 4.dp, start = 2.dp, end = 2.dp),
             )
         }

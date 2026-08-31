@@ -7,12 +7,28 @@
     <!-- Home Screen -->
     <string name="label_host">Host</string>
     <string name="label_port">Port</string>
+    <string name="label_server_name">Name</string>
+    <string name="label_add_server">Add server</string>
+    <string name="label_format_mismatch">Audio format mismatch</string>
+    <string name="label_no_server_enabled">No server enabled</string>
+    <string name="label_server_discovery">Server discovery</string>
+    <string name="label_scanning_local_network">Scanning the local network…</string>
+    <string name="label_no_server_found">No server found. Tap refresh to scan again.</string>
+    <string name="label_servers_found">%1$d server(s) found</string>
+    <string name="label_scan_again">Scan again</string>
+    <string name="label_use_server">Use %1$s</string>
+    <string name="label_saved_servers">Saved and discovered servers</string>
     <!-- Audio Screen -->
     <string name="label_audio_track">Audio Track</string>
     <string name="label_volume_linear_gain">Volume(Linear Gain)</string>
     <string name="label_buffer_scale">Buffer Scale(Multiple of MinBufferSize)</string>
     <string name="label_audio_effect">Audio Effect</string>
     <string name="label_loudness_enhancer">Loudness Enhancer</string>
+    <string name="label_loudness_warning">High gain can trigger device limiting and audible distortion.</string>
+    <string name="label_latency_profile">Network buffer</string>
+    <string name="label_latency_low">Low (25 ms)</string>
+    <string name="label_latency_balanced">Balanced (50 ms)</string>
+    <string name="label_latency_stable">Stable (100 ms)</string>
     <!-- Settings Screen -->
     <string name="label_auto_start">Auto Start</string>
     <string name="label_auto_start_when_system_boots">Auto start playback when system boots</string>
@@ -44,6 +60,11 @@
     <string name="label_no_post_notification_permission">No permission to post notification</string>
     <string name="label_tap_notification_1">Tap this notification to start downloading</string>
     <string name="label_tap_notification_2">Has an update, tap the notification to start downloading</string>
+    <string name="label_update_check_failed">Update check failed</string>
+    <string name="label_update_ready">Audio Share %s is ready</string>
+    <string name="label_tap_to_install_update">Tap to confirm installation</string>
+    <string name="label_update_download_failed">Update download failed</string>
+    <string name="label_update_signature_required">The APK was not installed because verification failed</string>
     <!-- Audio Player -->
     <string name="label_started">Started</string>
     <string name="label_stopped">Stopped</string>

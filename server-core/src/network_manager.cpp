@@ -21,6 +21,9 @@
 #include <list>
 #include <ranges>
 #include <coroutine>
+#include <random>
+#include <cstring>
+#include <span>
 
 #ifdef _WINDOWS
 #include <iphlpapi.h>
@@ -147,6 +150,11 @@ std::string network_manager::select_default_address(const std::vector<std::strin
 
 void network_manager::start_server(const std::string& host, uint16_t port, const audio_manager::capture_config& capture_config)
 {
+    _send_queue.clear();
+    _packet_ring.clear();
+    _v2_pending.clear();
+    _next_sequence = 0;
+    _next_frame_index = 0;
     _ioc = std::make_shared<asio::io_context>();
     {
         ip::tcp::endpoint endpoint { ip::make_address(host), port };
@@ -205,6 +213,7 @@ bool network_manager::is_running() const
 
 asio::awaitable<void> network_manager::read_loop(std::shared_ptr<tcp_socket> peer)
 {
+    bool protocol_v2 = false;
     while (true) {
         cmd_t cmd = cmd_t::cmd_none;
         auto [ec, _] = co_await asio::async_read(*peer, asio::buffer(&cmd, sizeof(cmd)));
@@ -216,7 +225,25 @@ asio::awaitable<void> network_manager::read_loop(std::shared_ptr<tcp_socket> pee
 
         spdlog::trace("cmd {}", (uint32_t)cmd);
 
-        if (cmd == cmd_t::cmd_get_format) {
+        if (cmd == cmd_t::cmd_hello_v2) {
+            io::github::mkckr0::audio_share_app::pb::Capabilities capabilities;
+            capabilities.set_protocol_version(_protocol_v2);
+            capabilities.set_max_datagram_bytes(static_cast<uint32_t>(_max_datagram_size));
+            capabilities.set_retransmit_window_ms(static_cast<uint32_t>(_retransmit_window.count()));
+            auto payload = capabilities.SerializeAsString();
+            auto size = static_cast<uint32_t>(payload.size());
+            std::array<asio::const_buffer, 3> buffers = {
+                asio::buffer(&cmd, sizeof(cmd)),
+                asio::buffer(&size, sizeof(size)),
+                asio::buffer(payload),
+            };
+            auto [ec, _] = co_await asio::async_write(*peer, buffers);
+            if (ec) {
+                close_session(peer);
+                break;
+            }
+            protocol_v2 = true;
+        } else if (cmd == cmd_t::cmd_get_format) {
             auto format = _audio_manager->get_format_binary();
             auto size = (uint32_t)format.size();
             std::array<asio::const_buffer, 3> buffers = {
@@ -231,18 +258,21 @@ asio::awaitable<void> network_manager::read_loop(std::shared_ptr<tcp_socket> pee
                 break;
             }
         } else if (cmd == cmd_t::cmd_start_play) {
-            int id = add_playing_peer(peer);
+            int id = add_playing_peer(peer, protocol_v2);
             if (id <= 0) {
                 spdlog::error("{} id error", __func__);
                 close_session(peer);
                 spdlog::trace("{} {}", __func__, ec);
                 break;
             }
-            std::array<asio::const_buffer, 2> buffers = {
+            auto info = _playing_peer_list.at(peer);
+            std::array<asio::const_buffer, 3> buffers = {
                 asio::buffer(&cmd, sizeof(cmd)),
                 asio::buffer(&id, sizeof(id)),
+                protocol_v2 ? asio::buffer(&info->session_id, sizeof(info->session_id)) : asio::const_buffer(),
             };
-            auto [ec, _] = co_await asio::async_write(*peer, buffers);
+            auto buffer_count = protocol_v2 ? buffers.size() : buffers.size() - 1;
+            auto [ec, _] = co_await asio::async_write(*peer, std::span(buffers.data(), buffer_count));
             if (ec) {
                 spdlog::trace("{} {}", __func__, ec);
                 close_session(peer);
@@ -328,15 +358,27 @@ asio::awaitable<void> network_manager::accept_tcp_loop(tcp_acceptor acceptor)
 asio::awaitable<void> network_manager::accept_udp_loop()
 {
     while (true) {
-        int id = 0;
+        std::array<uint8_t, _max_datagram_size> data {};
         ip::udp::endpoint udp_peer;
-        auto [ec, _] = co_await _udp_server->async_receive_from(asio::buffer(&id, sizeof(id)), udp_peer);
+        auto [ec, size] = co_await _udp_server->async_receive_from(asio::buffer(data), udp_peer);
         if (ec) {
             spdlog::info("{} {}", __func__, ec);
             co_return;
         }
 
-        fill_udp_peer(id, udp_peer);
+        if (size >= sizeof(udp_v2_header_t)) {
+            udp_v2_header_t header {};
+            std::memcpy(&header, data.data(), sizeof(header));
+            if (header.magic == _udp_v2_magic && header.version == _protocol_v2) {
+                handle_v2_datagram(data.data(), size, udp_peer);
+                continue;
+            }
+        }
+        if (size == sizeof(int)) {
+            int id = 0;
+            std::memcpy(&id, data.data(), sizeof(id));
+            fill_udp_peer(id, udp_peer);
+        }
     }
 }
 
@@ -349,7 +391,7 @@ auto network_manager::close_session(std::shared_ptr<tcp_socket>& peer) -> playin
     return it;
 }
 
-int network_manager::add_playing_peer(std::shared_ptr<tcp_socket>& peer)
+int network_manager::add_playing_peer(std::shared_ptr<tcp_socket>& peer, bool protocol_v2)
 {
     if (_playing_peer_list.contains(peer)) {
         spdlog::error("{} repeat add tcp://{}", __func__, peer->remote_endpoint());
@@ -359,6 +401,13 @@ int network_manager::add_playing_peer(std::shared_ptr<tcp_socket>& peer)
     auto info = _playing_peer_list[peer] = std::make_shared<peer_info_t>();
     static int g_id = 0;
     info->id = ++g_id;
+    info->protocol_v2 = protocol_v2;
+    if (protocol_v2) {
+        static std::mt19937_64 generator(std::random_device {}());
+        do {
+            info->session_id = generator();
+        } while (info->session_id == 0);
+    }
     info->last_tick = std::chrono::steady_clock::now();
 
     spdlog::trace("{} add id:{} tcp://{}", __func__, info->id, peer->remote_endpoint());
@@ -393,6 +442,95 @@ void network_manager::fill_udp_peer(int id, asio::ip::udp::endpoint udp_peer)
     spdlog::info("{} fill udp peer id:{} tcp://{} udp://{}", __func__, id, it->first->remote_endpoint(), udp_peer);
 }
 
+void network_manager::fill_udp_peer(uint64_t session_id, asio::ip::udp::endpoint udp_peer)
+{
+    auto it = std::find_if(_playing_peer_list.begin(), _playing_peer_list.end(), [session_id](const playing_peer_list_t::value_type& e) {
+        return e.second->protocol_v2 && e.second->session_id == session_id;
+    });
+    if (it == _playing_peer_list.end()) {
+        spdlog::warn("{} unknown v2 session:{} udp://{}", __func__, session_id, udp_peer);
+        return;
+    }
+    it->second->udp_peer = udp_peer;
+    spdlog::info("{} fill v2 udp peer session:{} tcp://{} udp://{}", __func__, session_id, it->first->remote_endpoint(), udp_peer);
+}
+
+void network_manager::handle_v2_datagram(const uint8_t* data, size_t size, const asio::ip::udp::endpoint& udp_peer)
+{
+    udp_v2_header_t header {};
+    std::memcpy(&header, data, sizeof(header));
+    if (header.header_size != sizeof(header) || header.payload_size + header.header_size != size) {
+        spdlog::warn("drop malformed v2 datagram from udp://{}", udp_peer);
+        return;
+    }
+    if (header.flags & udp_flag_registration) {
+        fill_udp_peer(header.session_id, udp_peer);
+        return;
+    }
+    if (!(header.flags & udp_flag_nack)) {
+        return;
+    }
+    auto peer = std::find_if(_playing_peer_list.begin(), _playing_peer_list.end(), [&](const playing_peer_list_t::value_type& entry) {
+        return entry.second->protocol_v2 && entry.second->session_id == header.session_id && entry.second->udp_peer == udp_peer;
+    });
+    if (peer == _playing_peer_list.end()) {
+        return;
+    }
+    auto packet = std::find_if(_packet_ring.begin(), _packet_ring.end(), [&](const packet_record_t& record) {
+        return record.sequence == header.sequence;
+    });
+    if (packet != _packet_ring.end()) {
+        enqueue_udp(packet_for_session(*packet->bytes, header.session_id, true), udp_peer);
+    }
+}
+
+std::shared_ptr<std::vector<uint8_t>> network_manager::packet_for_session(const std::vector<uint8_t>& packet, uint64_t session_id, bool retransmitted) const
+{
+    auto result = std::make_shared<std::vector<uint8_t>>(packet);
+    udp_v2_header_t header {};
+    std::memcpy(&header, result->data(), sizeof(header));
+    header.session_id = session_id;
+    if (retransmitted) {
+        header.flags |= udp_flag_retransmitted;
+    }
+    std::memcpy(result->data(), &header, sizeof(header));
+    return result;
+}
+
+void network_manager::enqueue_udp(std::shared_ptr<std::vector<uint8_t>> bytes, const asio::ip::udp::endpoint& endpoint)
+{
+    if (endpoint.port() == 0) {
+        return;
+    }
+    bool idle = _send_queue.empty();
+    _send_queue.push_back({ std::move(bytes), endpoint });
+    if (idle) {
+        send_next_udp();
+    }
+}
+
+void network_manager::send_next_udp()
+{
+    if (_send_queue.empty() || !_udp_server) {
+        return;
+    }
+    auto& item = _send_queue.front();
+    _udp_server->async_send_to(asio::buffer(*item.bytes), item.endpoint, [self = shared_from_this()](const asio::error_code& ec, std::size_t) {
+        if (ec) {
+            spdlog::warn("udp send failed: {}", ec.message());
+        }
+        self->_send_queue.pop_front();
+        self->send_next_udp();
+    });
+}
+
+void network_manager::prune_packet_ring()
+{
+    auto cutoff = std::chrono::steady_clock::now() - _retransmit_window;
+    while (!_packet_ring.empty() && _packet_ring.front().created_at < cutoff) {
+        _packet_ring.pop_front();
+    }
+}
 void network_manager::broadcast_audio_data(const char* data, size_t count, int block_align)
 {
     if (count <= 0) {
@@ -400,7 +538,7 @@ void network_manager::broadcast_audio_data(const char* data, size_t count, int b
     }
     // spdlog::trace("broadcast_audio_data count: {}", count);
 
-    // divide udp frame
+    // Divide legacy UDP frames.
     constexpr int mtu = 1492;
     int max_seg_size = mtu - 20 - 8;
     max_seg_size -= max_seg_size % block_align; // one single sample can't be divided
@@ -415,11 +553,50 @@ void network_manager::broadcast_audio_data(const char* data, size_t count, int b
         begin_pos += real_seg_size;
     }
 
-    _ioc->post([seg_list = std::move(seg_list), self = shared_from_this()] {
+    // V2 uses conservative IPv4/IPv6-safe datagrams and keeps a small carry so
+    // all regular packets have a predictable frame-aligned payload size.
+    const size_t v2_max_payload = (_max_datagram_size - sizeof(udp_v2_header_t))
+        - (_max_datagram_size - sizeof(udp_v2_header_t)) % block_align;
+    _v2_pending.insert(_v2_pending.end(), reinterpret_cast<const uint8_t*>(data), reinterpret_cast<const uint8_t*>(data) + count);
+    std::vector<std::shared_ptr<std::vector<uint8_t>>> v2_packets;
+    while (_v2_pending.size() >= v2_max_payload) {
+        auto packet = std::make_shared<std::vector<uint8_t>>(sizeof(udp_v2_header_t) + v2_max_payload);
+        udp_v2_header_t header {
+            .magic = _udp_v2_magic,
+            .version = _protocol_v2,
+            .flags = udp_flag_audio,
+            .header_size = static_cast<uint16_t>(sizeof(udp_v2_header_t)),
+            .session_id = 0,
+            .sequence = _next_sequence++,
+            .frame_index = _next_frame_index,
+            .frame_count = static_cast<uint16_t>(v2_max_payload / block_align),
+            .payload_size = static_cast<uint16_t>(v2_max_payload),
+        };
+        _next_frame_index += header.frame_count;
+        std::memcpy(packet->data(), &header, sizeof(header));
+        std::copy_n(_v2_pending.begin(), v2_max_payload, packet->begin() + sizeof(header));
+        _v2_pending.erase(_v2_pending.begin(), _v2_pending.begin() + v2_max_payload);
+        v2_packets.push_back(std::move(packet));
+    }
+
+    _ioc->post([seg_list = std::move(seg_list), v2_packets = std::move(v2_packets), self = shared_from_this()] {
         for (const auto& seg : seg_list) {
             for (auto& [peer, info] : self->_playing_peer_list) {
-                self->_udp_server->async_send_to(asio::buffer(*seg), info->udp_peer, [seg](const asio::error_code& ec, std::size_t bytes_transferred) { });
+                if (!info->protocol_v2) {
+                    self->enqueue_udp(seg, info->udp_peer);
+                }
             }
         }
+        for (const auto& packet : v2_packets) {
+            udp_v2_header_t header {};
+            std::memcpy(&header, packet->data(), sizeof(header));
+            self->_packet_ring.push_back({ header.sequence, packet, std::chrono::steady_clock::now() });
+            for (auto& [peer, info] : self->_playing_peer_list) {
+                if (info->protocol_v2) {
+                    self->enqueue_udp(self->packet_for_session(*packet, info->session_id, false), info->udp_peer);
+                }
+            }
+        }
+        self->prune_packet_ring();
     });
 }

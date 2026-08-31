@@ -19,12 +19,15 @@ package io.github.mkckr0.audio_share_app.model
 object NetworkConfigKeys {
     const val HOST = "host"
     const val PORT = "port"
+    const val SERVERS_JSON = "servers_json"
+    const val SERVER_ENDPOINTS_JSON = "server_endpoints_json"
 }
 
 object AudioConfigKeys {
     const val VOLUME = "volume"
     const val BUFFER_SCALE = "buffer_scale"
     const val LOUDNESS_ENHANCER = "loudness_enhancer"
+    const val LATENCY_PROFILE = "latency_profile"
 }
 
 object AppSettingsKeys {

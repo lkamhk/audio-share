@@ -30,6 +30,7 @@ import io.github.mkckr0.audio_share_app.model.AudioConfigKeys
 import io.github.mkckr0.audio_share_app.model.getFloat
 import io.github.mkckr0.audio_share_app.ui.base.ConfigGroup
 import io.github.mkckr0.audio_share_app.ui.base.SliderConfig
+import io.github.mkckr0.audio_share_app.ui.base.IntSliderConfig
 import io.github.mkckr0.audio_share_app.ui.theme.AppTheme
 
 @Composable
@@ -40,6 +41,16 @@ fun AudioScreen() {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         ConfigGroup(context.getString(R.string.label_audio_track)) {
+            IntSliderConfig(
+                key = AudioConfigKeys.LATENCY_PROFILE,
+                title = context.getString(R.string.label_latency_profile),
+                labels = listOf(
+                    context.getString(R.string.label_latency_low),
+                    context.getString(R.string.label_latency_balanced),
+                    context.getString(R.string.label_latency_stable),
+                ),
+                defaultValue = 1,
+            )
             SliderConfig(
                 key = AudioConfigKeys.VOLUME,
                 title = context.getString(R.string.label_volume_linear_gain),
@@ -65,6 +76,10 @@ fun AudioScreen() {
                 defaultValue = context.getFloat(R.string.default_loudness_enhancer),
                 valueRange = 0f..3000f,
                 step = 100f
+            )
+            androidx.compose.material3.Text(
+                text = context.getString(R.string.label_loudness_warning),
+                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
             )
         }
     }

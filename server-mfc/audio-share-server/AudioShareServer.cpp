@@ -44,7 +44,7 @@ CAudioShareServerApp::CAudioShareServerApp()
 
     // TODO: add construction code here,
     // Place all significant initialization in InitInstance
-    m_pszAppName = _wcsdup(L"Audio Share Server");
+    m_pszAppName = _wcsdup(L"Audio Share Server v0.4.8");
 
     WCHAR lpFileName[1024];
     GetModuleFileNameW(nullptr, lpFileName, sizeof(lpFileName));

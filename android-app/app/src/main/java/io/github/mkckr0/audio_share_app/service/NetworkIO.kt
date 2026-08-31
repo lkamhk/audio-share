@@ -17,6 +17,7 @@
 package io.github.mkckr0.audio_share_app.service
 
 import io.github.mkckr0.audio_share_app.pb.Client.AudioFormat
+import io.github.mkckr0.audio_share_app.pb.Client.Capabilities
 import io.github.mkckr0.audio_share_app.service.NetClient.CMD
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.ConnectedDatagramSocket
@@ -33,7 +34,9 @@ import io.ktor.utils.io.writePacket
 import kotlinx.io.Buffer
 import kotlinx.io.readByteArray
 import kotlinx.io.readIntLe
+import kotlinx.io.readLongLe
 import kotlinx.io.writeIntLe
+import kotlinx.io.writeLongLe
 import java.nio.ByteBuffer
 
 suspend fun ByteWriteChannel.writeCMD(cmd: CMD) {
@@ -51,6 +54,10 @@ suspend fun ByteReadChannel.readIntLE(): Int {
     return readPacket(Int.SIZE_BYTES).readIntLe()
 }
 
+suspend fun ByteReadChannel.readLongLE(): Long {
+    return readPacket(Long.SIZE_BYTES).readLongLe()
+}
+
 suspend fun ByteReadChannel.readCMD(): CMD {
     return CMD.entries[readIntLE()]
 }
@@ -58,6 +65,11 @@ suspend fun ByteReadChannel.readCMD(): CMD {
 suspend fun ByteReadChannel.readAudioFormat(): AudioFormat? {
     val size = readIntLE()
     return AudioFormat.parseFrom(readByteBuffer(size))
+}
+
+suspend fun ByteReadChannel.readCapabilities(): Capabilities {
+    val size = readIntLE()
+    return Capabilities.parseFrom(readByteBuffer(size))
 }
 
 suspend fun ConnectedDatagramSocket.writeIntLE(value: Int) {
@@ -70,6 +82,12 @@ suspend fun DatagramWriteChannel.writeIntLE(value: Int, address: SocketAddress) 
     send(Datagram(Buffer().apply {
         this.writeIntLe(value)
     }.build(), address))
+}
+
+suspend fun DatagramWriteChannel.writeControlPacket(packet: ByteBuffer, address: SocketAddress) {
+    val bytes = ByteArray(packet.remaining())
+    packet.slice().get(bytes)
+    send(Datagram(Buffer().apply { write(bytes) }.build(), address))
 }
 
 suspend fun DatagramReadChannel.readByteBuffer(): ByteBuffer {
