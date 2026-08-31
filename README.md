@@ -183,7 +183,7 @@ Turns off or ignore battery optimizations can let it work.
 
 ## Compile from source
 
-On Windows, `build-release.cmd` is the maintained release entry point. It validates synchronized versions, runs tests, builds signed artifacts, packages `AudioShareUpdater.exe`, and signs the dedicated server update ZIP. It does not publish or enable a Supabase update. See [docs/auto-update.md](docs/auto-update.md) for key initialization, Dropbox staging, and the disabled-first publish workflow.
+On Windows, `pwsh -File .\build-release.ps1` is the maintained release entry point. It validates synchronized versions, runs tests, builds signed artifacts, packages `AudioShareUpdater.exe`, and signs the dedicated server update ZIP. It does not publish or enable a Supabase update. See [docs/auto-update.md](docs/auto-update.md) for key initialization, Dropbox staging, and the disabled-first publish workflow.
 
 - Android App
     - Install JDK 17 manually or by Andorid Studio.

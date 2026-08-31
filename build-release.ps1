@@ -14,7 +14,7 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
     ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
     $pwsh = $pwshCandidates | Select-Object -First 1
     if (-not $pwsh) {
-        throw "PowerShell 7 or later is required. Install it with 'winget install --id Microsoft.PowerShell --source winget', reopen the terminal, then run build-release.cmd."
+        throw "PowerShell 7 or later is required. Install it with 'winget install --id Microsoft.PowerShell --source winget', reopen the terminal, then run 'pwsh -File .\build-release.ps1'."
     }
 
     $forwardedArguments = @("-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $PSCommandPath)

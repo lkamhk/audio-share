@@ -88,19 +88,19 @@ https://nfqkislweudltvckonog.supabase.co/functions/v1/audio-share-update
 只驗證環境及版本：
 
 ```powershell
-.\build-release.cmd -ValidateOnly
+pwsh -File .\build-release.ps1 -ValidateOnly
 ```
 
 正式 build、測試及簽章：
 
 ```powershell
-.\build-release.cmd
+pwsh -File .\build-release.ps1
 ```
 
 同時複製更新檔案到本機 Dropbox sync folder：
 
 ```powershell
-.\build-release.cmd -StageDropbox
+pwsh -File .\build-release.ps1 -StageDropbox
 ```
 
 輸出位於 `release/AudioShare-v<version>/`，包括：
