@@ -1,13 +1,13 @@
 # Audio Share 自動更新
 
-Audio Share v0.4.6 使用同一個 Supabase Edge Function提供兩個獨立 channel：
+Audio Share v0.4.8 使用同一個 Supabase Edge Function提供兩個獨立 channel：
 
 - Windows：`audio-share-server-stable / windows / x86_64`
 - Android：`audio-share-android-stable / android / universal`
 
 更新檔案由 Dropbox傳送。Windows ZIP及 Android APK均使用同一組 ECDSA P-256/SHA-256 updater key產生 detached signature；client下載後必須先驗證簽章。
 
-Windows v0.4.5已經包含 Supabase updater，所以可直接驗收 v0.4.5 → v0.4.6。Android v0.4.5仍使用舊 GitHub updater，因此 Android v0.4.6是需要手動安裝一次的 bridge release；第一個完整 Android自動更新測試是 v0.4.6 → v0.4.7。
+Android v0.4.7可以透過 Supabase updater升級至 v0.4.8。Windows v0.4.7雖然包含 updater，但版本比較器無法解析 manifest使用的純 SemVer格式，因此需要手動安裝一次 v0.4.8作為 bridge release；第一個完整 Windows自動更新測試應使用 v0.4.8 → v0.4.9。
 
 ## Android更新流程
 
@@ -49,10 +49,12 @@ supabase/functions/audio-share-update/index.ts
 Windows PowerShell範例：
 
 ```powershell
-$source = "S:\WindowsImageBackup\github_fork\audioshare\updater\supabase\functions\audio-share-update"
-$destination = "S:\WindowsImageBackup\github_fork\saladict\supabase\functions\audio-share-update"
+$audioShareRepo = Resolve-Path "."
+$supabaseRepo = Resolve-Path "..\your-supabase-project"
+$source = Join-Path $audioShareRepo "updater\supabase\functions\audio-share-update"
+$destination = Join-Path $supabaseRepo "supabase\functions\audio-share-update"
 Copy-Item -LiteralPath $source -Destination $destination -Recurse
-Set-Location "S:\WindowsImageBackup\github_fork\saladict"
+Set-Location $supabaseRepo
 ```
 
 如果 destination已存在，代表專用 function source以前已經複製；先比較內容，不要使用會影響其他目錄的遞迴刪除命令。
@@ -78,7 +80,7 @@ https://nfqkislweudltvckonog.supabase.co/functions/v1/audio-share-update
 未發佈 update row時，以下 read-only檢查應同時得到 HTTP 204：
 
 ```powershell
-.\updater\test-update-manifest.ps1 -CurrentVersion 0.4.6
+.\updater\test-update-manifest.ps1 -CurrentVersion 0.4.7
 ```
 
 必須在正式發佈 row之前完成部署；build script不會自動部署 Supabase。
