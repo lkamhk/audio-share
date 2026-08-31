@@ -2,7 +2,7 @@
 
 [English](README.md) | 简体中文
 
-Audio Share通过网络将 Windows或 Linux电脑的音频传输到 Android设备播放。
+Audio Share通过网络将 Windows电脑的音频传输到 Android设备播放。
 
 本仓库是 [mkckr0/audio-share](https://github.com/mkckr0/audio-share) 的维护分支，保留原作者署名及 Apache-2.0许可证。
 

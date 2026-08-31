@@ -2,7 +2,7 @@
 
 English | [简体中文](README.zh-CN.md)
 
-Audio Share streams audio from a Windows or Linux computer to Android devices over a network.
+Audio Share streams audio from a Windows computer to Android devices over a network.
 
 This repository is a maintained fork of [mkckr0/audio-share](https://github.com/mkckr0/audio-share). It retains the original attribution and Apache-2.0 license.
 
