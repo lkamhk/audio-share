@@ -1,12 +1,10 @@
 .vscode
 .agents/
+docs/auto-update.md
 settings/updater.json
 release/
 logs/
 tools/
 *.p8
 *.jks
-AI_SUPABASE_DROPBOX_AUTO_UPDATE_GUIDE.md
-directory-tree-folder.txt
-gen_directory-tree-folder.bat
 updater/supabase/publish-android-v*.sql
