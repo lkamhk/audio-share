@@ -1,0 +1,13 @@
+Android App
+- Move project, release, and issue links to the lkamhk/audio-share fork.
+- Keep the existing application ID and signing identity for in-place updates.
+- Improve PCM playback stability with ordered buffering, retransmission, and concealment.
+- Add server discovery, multi-server playback, and live transport statistics.
+
+Server MFC
+- Add signed automatic updates through Supabase manifests and Dropbox artifacts.
+- Add the dedicated AudioShareUpdater helper.
+- Improve WASAPI packet draining and discontinuity handling.
+
+Protocol
+- Add protocol v2 sequence and frame metadata while retaining v1 compatibility.

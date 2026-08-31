@@ -3,36 +3,20 @@
     <img src="metadata/en-US/images/icon.png" width="20%" alt="metadata/en-US/images/icon.png">
 </p>
 
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/mkckr0/audio-share?logo=github)](https://github.com/mkckr0/audio-share/releases/latest)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/lkamhk/audio-share?logo=github)](https://github.com/lkamhk/audio-share/releases/latest)
 [![F-Droid](https://img.shields.io/f-droid/v/io.github.mkckr0.audio_share_app?logo=F-Droid)](https://f-droid.org/packages/io.github.mkckr0.audio_share_app)
-[![GitHub license](https://img.shields.io/github/license/mkckr0/audio-share)](https://img.shields.io/github/license/mkckr0/audio-share)
-[![GitHub Release Date](https://img.shields.io/github/release-date/mkckr0/audio-share)](https://img.shields.io/github/release-date/mkckr0/audio-share)
-[![GitHub last commit](https://img.shields.io/github/last-commit/mkckr0/audio-share)](https://img.shields.io/github/last-commit/mkckr0/audio-share)
-[![GitHub contributors](https://img.shields.io/github/contributors/mkckr0/audio-share)](https://img.shields.io/github/contributors/mkckr0/audio-share)
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/y/mkckr0/audio-share)](https://img.shields.io/github/commit-activity/y/mkckr0/audio-share)
-[![GitHub Repo stars](https://img.shields.io/github/stars/mkckr0/audio-share?style=flat)](https://img.shields.io/github/stars/mkckr0/audio-share)
-[![GitHub forks](https://img.shields.io/github/forks/mkckr0/audio-share?style=flat)](https://img.shields.io/github/forks/mkckr0/audio-share)
-[![GitHub watchers](https://img.shields.io/github/watchers/mkckr0/audio-share?style=flat)](https://img.shields.io/github/watchers/mkckr0/audio-share)
-[![GitHub language count](https://img.shields.io/github/languages/count/mkckr0/audio-share)](https://img.shields.io/github/languages/count/mkckr0/audio-share)
-[![GitHub top language](https://img.shields.io/github/languages/top/mkckr0/audio-share)](https://img.shields.io/github/languages/top/mkckr0/audio-share)
-[![GitHub repo size](https://img.shields.io/github/repo-size/mkckr0/audio-share)](https://img.shields.io/github/repo-size/mkckr0/audio-share)
-[![GitHub all releases](https://img.shields.io/github/downloads/mkckr0/audio-share/total?logo=github)](https://img.shields.io/github/downloads/mkckr0/audio-share/total)
-[![Download Audio Share](https://img.shields.io/sourceforge/dt/audio-share.svg?logo=sourceforge)](https://sourceforge.net/projects/audio-share/files)
-[![GitHub issues](https://img.shields.io/github/issues/mkckr0/audio-share)](https://img.shields.io/github/issues/mkckr0/audio-share)
-[![GitHub closed issues](https://img.shields.io/github/issues-closed/mkckr0/audio-share)](https://img.shields.io/github/issues-closed/mkckr0/audio-share)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/mkckr0/audio-share)](https://img.shields.io/github/issues-pr/mkckr0/audio-share)
-[![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/mkckr0/audio-share)](https://img.shields.io/github/issues-pr-closed/mkckr0/audio-share)
-[![Release](https://github.com/mkckr0/audio-share/actions/workflows/release.yml/badge.svg)](https://github.com/mkckr0/audio-share/actions/workflows/release.yml)
-[![GitHub number of milestones](https://img.shields.io/github/milestones/open/mkckr0/audio-share)](https://github.com/mkckr0/audio-share/milestones?state=open)
-[![GitHub milestone details](https://img.shields.io/github/milestones/progress-percent/mkckr0/audio-share/3)](https://github.com/mkckr0/audio-share/milestone/3)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmkckr0%2Faudio-share.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmkckr0%2Faudio-share?ref=badge_shield)
+[![GitHub license](https://img.shields.io/github/license/lkamhk/audio-share)](LICENSE)
+[![GitHub Release Date](https://img.shields.io/github/release-date/lkamhk/audio-share)](https://github.com/lkamhk/audio-share/releases)
+[![GitHub last commit](https://img.shields.io/github/last-commit/lkamhk/audio-share)](https://github.com/lkamhk/audio-share/commits/main)
+[![GitHub Repo stars](https://img.shields.io/github/stars/lkamhk/audio-share?style=flat)](https://github.com/lkamhk/audio-share/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/lkamhk/audio-share)](https://github.com/lkamhk/audio-share/issues)
 
-<a href="https://github.com/mkckr0/audio-share/releases/latest"><img src="https://raw.githubusercontent.com/Ehviewer-Overhauled/Art/master/get-it-on-github.svg" height="75"></a>
+<a href="https://github.com/lkamhk/audio-share/releases/latest"><img src="https://raw.githubusercontent.com/Ehviewer-Overhauled/Art/master/get-it-on-github.svg" height="75"></a>
 <a href="https://f-droid.org/packages/io.github.mkckr0.audio_share_app"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="75"></a>
 
-<a href="https://sourceforge.net/projects/audio-share/files"><img alt="Download Audio Share" src="https://a.fsdn.com/con/app/sf-download-button?button_size=2x" width=276 height=48></a>
-
 Audio Share can share Windows/Linux computer's audio to Android phone over network, so your phone becomes the speaker of computer. (You needn't buy a new speaker😄.)
+
+This repository is a maintained fork of [mkckr0/audio-share](https://github.com/mkckr0/audio-share). It retains the original Apache-2.0 license and attribution while adding protocol v2 reliability, multi-server playback, and signed automatic updates.
 
 
 ## Screenshots
@@ -56,9 +40,9 @@ Audio Share can share Windows/Linux computer's audio to Android phone over netwo
 - The network (e.g. Wi-Fi or USB tethering) that the phone can connect with the PC.
 
 ## Usage for Windows GUI
-- Download APK file and AudioShareServer.exe from [latest release](https://github.com/mkckr0/audio-share/releases/latest).
-- Open the AudioShareServer.exe on your computer. The default arguments may work well. But you may still have to check the "Host" part. It's normally the LAN address, such as `192.168.xxx.xxx`. Make sure your phone can connect your computer over this IP address. Then Click "Start Server" button.
-- Install APK to your phone and open it. Modify the "Host" part to make sure it's same as the value of previous step, such as `192.168.xxx.xxx`. Click "▶" button and enjoy the audio🎶.
+- Download the Android APK and `AudioShare-Server-GUI-Windows-x64` ZIP from the [latest release](https://github.com/lkamhk/audio-share/releases/latest).
+- Extract the Windows ZIP, then open `AudioShareServer.exe`. Check that the Host is a LAN address reachable by your phone, then click "Start Server".
+- Install and open the APK. The app does not create a default server on first launch; use server discovery or add the server address manually, then start playback.
 
 
 ## Usage for Windows/Linux CMD
@@ -104,6 +88,8 @@ There are two kinds of audio format:
 - Transfer audio format
 
 The transfer audio format is uncompressed PCM data and keep same with capture audio format.
+
+Protocol v2 keeps PCM lossless while adding sequence/frame metadata, packet reordering, a bounded jitter buffer, and one-shot retransmission. For predictable bandwidth and broad Android compatibility, prefer 48 kHz, stereo, PCM16. Native formats above 48 kHz or with more than two channels require more bandwidth and a higher packet rate.
 
 You can open `server.log` to see the transfer audio format.
 ```
@@ -197,6 +183,8 @@ Turns off or ignore battery optimizations can let it work.
 
 ## Compile from source
 
+On Windows, `build-release.cmd` is the maintained release entry point. It validates synchronized versions, runs tests, builds signed artifacts, packages `AudioShareUpdater.exe`, and signs the dedicated server update ZIP. It does not publish or enable a Supabase update. See [docs/auto-update.md](docs/auto-update.md) for key initialization, Dropbox staging, and the disabled-first publish workflow.
+
 - Android App
     - Install JDK 17 manually or by Andorid Studio.
     - Android Studio will import all dependencies automatically.
@@ -216,7 +204,7 @@ Turns off or ignore battery optimizations can let it work.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=mkckr0/audio-share&type=Date)](https://star-history.com/#mkckr0/audio-share&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=lkamhk/audio-share&type=Date)](https://star-history.com/#lkamhk/audio-share&Date)
 
 ## License
 This project is licensed under the [Apache-2.0 license](https://opensource.org/license/apache-2-0) .
@@ -235,9 +223,6 @@ This project is licensed under the [Apache-2.0 license](https://opensource.org/l
    See the License for the specific language governing permissions and
    limitations under the License.
 ```
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmkckr0%2Faudio-share.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmkckr0%2Faudio-share?ref=badge_large)
-
 
 ## Used Third-party Libraries
 

@@ -24,6 +24,8 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <optional>
+#include "update_contract.hpp"
 
 class audio_manager;
 class network_manager;
@@ -49,7 +51,8 @@ private:
 public:
 	void ShowNotificationIcon(BOOL bShow);
 	void ShowBalloonNotification(LPCWSTR lpszInfoTitle, LPCWSTR lpszInfo);
-	void SetUpdateLink(LPCWSTR lpszUpdateLink);
+	void SetUpdateManifest(const audio_share::updater::update_manifest& manifest);
+	bool StartUpdater();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support
@@ -77,7 +80,7 @@ protected:
 	afx_msg void OnAppExit();
 
 public:
-	CString m_strUpdateLink;
+	std::optional<audio_share::updater::update_manifest> m_updateManifest;
 	HICON m_hIcon;
 	CTabCtrl m_tabCtrl;
 	std::vector<CTabPanel*> m_vecTabPanel;

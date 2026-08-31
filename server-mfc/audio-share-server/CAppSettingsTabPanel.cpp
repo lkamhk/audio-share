@@ -11,6 +11,7 @@
 #include "util.hpp"
 #include "AppMsg.h"
 #include "CMainDialog.h"
+#include "update_contract.hpp"
 
 #include <netfw.h>
 
@@ -19,10 +20,8 @@
 #include <wil/win32_result_macros.h>
 #include <spdlog/spdlog.h>
 #include <filesystem>
-#include <nlohmann/json.hpp>
-
-using json = nlohmann::json;
-
+#include <memory>
+#include <thread>
 constexpr int check_update_interval = 3 * 60 * 60 * 1000;
 
 // CAppSettingsTabPanel dialog
@@ -65,6 +64,7 @@ BEGIN_MESSAGE_MAP(CAppSettingsTabPanel, CTabPanel)
     ON_BN_CLICKED(IDC_BUTTON_UPDATE, &CAppSettingsTabPanel::OnBnClickedButtonUpdate)
     ON_WM_TIMER()
     ON_CBN_SELCHANGE(IDC_COMBO_LANGUAGE, &CAppSettingsTabPanel::OnCbnSelchangeComboLanguage)
+    ON_MESSAGE(WM_APP_UPDATE_CHECKED, &CAppSettingsTabPanel::OnUpdateChecked)
 END_MESSAGE_MAP()
 
 
@@ -261,67 +261,61 @@ void CAppSettingsTabPanel::OnBnClickedButtonUpdate()
 
 void CAppSettingsTabPanel::CheckForUpdate(bool bPromptError)
 {
-    std::thread([=] {
-        try
-        {
-            CInternetSession session(
-                L"Audio Share Server",
-                INTERNET_NO_CALLBACK,
-                INTERNET_OPEN_TYPE_DIRECT,
-                0, 0,
-                INTERNET_FLAG_DONT_CACHE
-            );
-            auto httpFile = (CHttpFile*)session.OpenURL(
-                L"https://api.github.com/repos/mkckr0/audio-share/releases/latest",
-                INTERNET_NO_CALLBACK,
-                INTERNET_FLAG_TRANSFER_BINARY | INTERNET_FLAG_RELOAD
-            );
-            if (!httpFile) {
-                return;
-            }
-            auto cleanup = wil::scope_exit([&] {
-                httpFile->Close();
-            });
+    if (m_updateCheckRunning.exchange(true)) {
+        return;
+    }
 
-            std::string response;
-            char buf[1024];
-            while (int len = httpFile->Read(buf, sizeof(buf))) {
-                response.append(buf, len);
-            }
-
-            auto res = json::parse(response);
-            std::string version("v");
-            version += CW2A(CAboutDialog::GetStringFileInfo(L"ProductVersion"));
-            std::string tag_name = res["tag_name"];
-            if (util::is_newer_version(tag_name, version)) {
-                auto pMainDialog = theApp.GetMainDialog();
-                pMainDialog->SetUpdateLink(CA2W(std::string(res["html_url"]).c_str()));
-                CString s;
-                (void)s.LoadStringW(IDS_NEW_VERSION);
-                pMainDialog->ShowBalloonNotification(s, CA2W(tag_name.c_str()));
-            }
-            else {
-                if (bPromptError) {
-                    AfxMessageBox(IDS_NO_UPDATE, MB_OK | MB_ICONINFORMATION);
-                }
-            }
+    const auto window = GetSafeHwnd();
+    const auto version = std::wstring(CAboutDialog::GetStringFileInfo(L"ProductVersion"));
+    std::thread([window, version, bPromptError] {
+        auto result = std::make_unique<audio_share::updater::update_check_result>(
+            audio_share::updater::check_for_update(version)
+        );
+        if (!::PostMessageW(
+                window,
+                WM_APP_UPDATE_CHECKED,
+                bPromptError ? TRUE : FALSE,
+                reinterpret_cast<LPARAM>(result.get())
+            )) {
+            return;
         }
-        catch (const std::exception& e) {
-            spdlog::error("CAppSettingsTabPanel::OnBnClickedButtonUpdate: {}", e.what());
-            if (bPromptError) {
-                AfxMessageBox(CA2W(e.what()), MB_OK | MB_ICONSTOP);
-            }
-        }
-        catch (CException* e) {
-            WCHAR lpszError[512];
-            UINT nHelpContext;
-            e->GetErrorMessage(lpszError, _countof(lpszError), &nHelpContext);
-            spdlog::error(L"CAppSettingsTabPanel::OnBnClickedButtonUpdate: {}", lpszError);
-            if (bPromptError) {
-                AfxMessageBox(lpszError, MB_OK | MB_ICONSTOP);
-            }
-        }
+        result.release();
     }).detach();
+}
+
+LRESULT CAppSettingsTabPanel::OnUpdateChecked(WPARAM wParam, LPARAM lParam)
+{
+    std::unique_ptr<audio_share::updater::update_check_result> result(
+        reinterpret_cast<audio_share::updater::update_check_result*>(lParam)
+    );
+    m_updateCheckRunning = false;
+    const auto prompt = wParam != FALSE;
+
+    if (!result) {
+        return 0;
+    }
+    if (result->status == audio_share::updater::update_check_status::update_available && result->manifest) {
+        auto* main_dialog = theApp.GetMainDialog();
+        main_dialog->SetUpdateManifest(*result->manifest);
+        CString title;
+        (void)title.LoadStringW(IDS_NEW_VERSION);
+        const auto message = result->manifest->notes.empty()
+            ? result->manifest->version
+            : result->manifest->version + L"\n" + result->manifest->notes;
+        main_dialog->ShowBalloonNotification(title, message.c_str());
+    }
+    else if (result->status == audio_share::updater::update_check_status::no_update) {
+        if (prompt) {
+            AfxMessageBox(IDS_NO_UPDATE, MB_OK | MB_ICONINFORMATION);
+        }
+    }
+    else {
+        spdlog::error(L"Update check failed: {}", result->error_message);
+        if (prompt) {
+            AfxMessageBox(result->error_message.c_str(), MB_OK | MB_ICONSTOP);
+        }
+    }
+    return 0;
 }
 
 void CAppSettingsTabPanel::OnTimer(UINT_PTR nIDEvent)

@@ -247,6 +247,7 @@ void audio_manager::do_loopback_recording(std::shared_ptr<network_manager> netwo
     using namespace std::chrono_literals;
     asio::steady_timer timer(*network_manager->_ioc);
     std::error_code ec;
+    uint64_t discontinuity_count = 0;
 
     timer.expires_at(std::chrono::steady_clock::now());
 
@@ -257,34 +258,46 @@ void audio_manager::do_loopback_recording(std::shared_ptr<network_manager> netwo
             break;
         }
 
-        UINT32 next_packet_size = 0;
-        hr = pCaptureClient->GetNextPacketSize(&next_packet_size);
-        exit_on_failed(hr, "pCaptureClient->GetNextPacketSize");
+        while (true) {
+            UINT32 next_packet_size = 0;
+            hr = pCaptureClient->GetNextPacketSize(&next_packet_size);
+            exit_on_failed(hr, "pCaptureClient->GetNextPacketSize");
+            if (next_packet_size == 0) {
+                break;
+            }
 
-        if (next_packet_size == 0) {
-            continue;
-        }
+            BYTE* pData {};
+            UINT32 numFramesAvailable {};
+            DWORD dwFlags {};
 
-        BYTE* pData {};
-        UINT32 numFramesAvailable {};
-        DWORD dwFlags {};
+            hr = pCaptureClient->GetBuffer(&pData, &numFramesAvailable, &dwFlags, nullptr, nullptr);
+            exit_on_failed(hr, "pCaptureClient->GetBuffer");
 
-        hr = pCaptureClient->GetBuffer(&pData, &numFramesAvailable, &dwFlags, nullptr, nullptr);
-        exit_on_failed(hr, "pCaptureClient->GetBuffer");
-
-        int bytes_per_frame = pCaptureFormat->nBlockAlign;
-        size_t count = numFramesAvailable * bytes_per_frame;
-
-        network_manager->broadcast_audio_data((const char*)pData, count, pCaptureFormat->nBlockAlign);
+            const int bytes_per_frame = pCaptureFormat->nBlockAlign;
+            const size_t count = static_cast<size_t>(numFramesAvailable) * bytes_per_frame;
+            if (dwFlags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY) {
+                spdlog::warn(
+                    "WASAPI capture data discontinuity #{}: {} frames",
+                    ++discontinuity_count,
+                    numFramesAvailable
+                );
+            }
+            if (dwFlags & AUDCLNT_BUFFERFLAGS_SILENT) {
+                std::vector<char> silence(count, 0);
+                network_manager->broadcast_audio_data(silence.data(), silence.size(), bytes_per_frame);
+            } else if (pData != nullptr) {
+                network_manager->broadcast_audio_data(reinterpret_cast<const char*>(pData), count, bytes_per_frame);
+            }
 
 #ifdef DEBUG
-        frame_count += numFramesAvailable;
-        seconds = frame_count / pCaptureFormat->nSamplesPerSec;
-        // spdlog::trace("numFramesAvailable: {}, seconds: {}", numFramesAvailable, seconds);
+            frame_count += numFramesAvailable;
+            seconds = frame_count / pCaptureFormat->nSamplesPerSec;
+            // spdlog::trace("numFramesAvailable: {}, seconds: {}", numFramesAvailable, seconds);
 #endif // DEBUG
 
-        hr = pCaptureClient->ReleaseBuffer(numFramesAvailable);
-        exit_on_failed(hr, "pCaptureClient->ReleaseBuffer");
+            hr = pCaptureClient->ReleaseBuffer(numFramesAvailable);
+            exit_on_failed(hr, "pCaptureClient->ReleaseBuffer");
+        }
 
     } while (!_stopped);
 }

@@ -29,6 +29,8 @@
 #include "CAboutDialog.h"
 
 #include <afxdialogex.h>
+#include <filesystem>
+#include <format>
 
 
 #ifdef _DEBUG
@@ -117,9 +119,77 @@ void CMainDialog::ShowBalloonNotification(LPCWSTR lpszInfoTitle, LPCWSTR lpszInf
     Shell_NotifyIconW(NIM_MODIFY, &nid);
 }
 
-void CMainDialog::SetUpdateLink(LPCWSTR lpszUpdateLink)
+void CMainDialog::SetUpdateManifest(const audio_share::updater::update_manifest& manifest)
 {
-    m_strUpdateLink = lpszUpdateLink;
+    m_updateManifest = manifest;
+}
+
+bool CMainDialog::StartUpdater()
+{
+    if (!m_updateManifest) {
+        return false;
+    }
+
+    auto prompt = L"Audio Share Server v" + m_updateManifest->version + L" is available.\n\n";
+    if (!m_updateManifest->notes.empty()) {
+        prompt += m_updateManifest->notes + L"\n\n";
+    }
+    prompt += L"The server will close while the signed update is installed. Continue?";
+    if (AfxMessageBox(prompt.c_str(), MB_YESNO | MB_ICONQUESTION) != IDYES) {
+        return false;
+    }
+
+    const auto updater_path = std::filesystem::path(theApp.m_exePath).parent_path() /
+        audio_share::updater::updater_executable_name;
+    if (!std::filesystem::is_regular_file(updater_path)) {
+        AfxMessageBox(
+            L"AudioShareUpdater.exe was not found next to AudioShareServer.exe.",
+            MB_OK | MB_ICONSTOP
+        );
+        return false;
+    }
+
+    const auto current_version = CAboutDialog::GetStringFileInfo(L"ProductVersion");
+    const auto arguments = std::format(
+        L"--pid {} --current-version \"{}\"",
+        GetCurrentProcessId(),
+        current_version.GetString()
+    );
+    const auto write_probe_path = updater_path.parent_path() /
+        (L".audioshare-update-write-test-" + std::to_wstring(GetCurrentProcessId()) + L".tmp");
+    const auto write_probe = CreateFileW(
+        write_probe_path.c_str(),
+        GENERIC_WRITE,
+        0,
+        nullptr,
+        CREATE_NEW,
+        FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+        nullptr
+    );
+    const auto requires_elevation = write_probe == INVALID_HANDLE_VALUE;
+    if (!requires_elevation) {
+        CloseHandle(write_probe);
+    }
+
+    SHELLEXECUTEINFOW execute_info{};
+    execute_info.cbSize = sizeof(execute_info);
+    execute_info.fMask = SEE_MASK_NOCLOSEPROCESS;
+    execute_info.hwnd = GetSafeHwnd();
+    execute_info.lpVerb = requires_elevation ? L"runas" : L"open";
+    execute_info.lpFile = updater_path.c_str();
+    execute_info.lpParameters = arguments.c_str();
+    execute_info.lpDirectory = updater_path.parent_path().c_str();
+    execute_info.nShow = SW_SHOWNORMAL;
+    if (!ShellExecuteExW(&execute_info)) {
+        if (GetLastError() != ERROR_CANCELLED) {
+            AfxMessageBox(L"Failed to start the update helper.", MB_OK | MB_ICONSTOP);
+        }
+        return false;
+    }
+    if (execute_info.hProcess) {
+        CloseHandle(execute_info.hProcess);
+    }
+    return true;
 }
 
 void CMainDialog::DoDataExchange(CDataExchange* pDX)
@@ -262,7 +332,9 @@ LRESULT CMainDialog::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         theApp.GetContextMenuManager()->ShowPopupMenu(IDR_MENU_SYSTEM_TRAY, pos.x, pos.y, this, TRUE);
     }
     else if (event == NIN_BALLOONUSERCLICK) {
-        ShellExecuteW(nullptr, nullptr, m_strUpdateLink, nullptr, nullptr, 0);
+        if (StartUpdater()) {
+            DestroyWindow();
+        }
     }
 
     return 0;

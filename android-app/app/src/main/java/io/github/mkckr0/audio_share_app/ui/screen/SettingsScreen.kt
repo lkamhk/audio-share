@@ -55,6 +55,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.workDataOf
 import androidx.work.WorkManager
 import io.github.mkckr0.audio_share_app.BuildConfig
 import io.github.mkckr0.audio_share_app.R
@@ -202,6 +203,8 @@ fun SettingsScreen() {
                             5, TimeUnit.MINUTES,
 //                            PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS,
 //                            PeriodicWorkRequest.MIN_PERIODIC_FLEX_MILLIS, TimeUnit.MILLISECONDS,
+                        ).setInputData(
+                            workDataOf(UpdateWorker.KEY_SUPPRESS_MESSAGE to true)
                         ).build()
                     workManager.enqueueUniquePeriodicWork(
                         WorkName.AUTO_CHECK_UPDATE.value,
@@ -237,7 +240,7 @@ fun SettingsScreen() {
         PreferenceCategory(context.getString(R.string.label_about)) {
             Preference(
                 icon = R.drawable.github_mark,
-                title = "Audio Share",
+                title = "Audio Share v0.4.8",
                 summary = stringResource(R.string.project_url),
                 intent = rememberIntent(
                     Intent.ACTION_VIEW,
@@ -259,7 +262,7 @@ fun SettingsScreen() {
                 summary = remember { "${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})-${BuildConfig.BUILD_TYPE}" },
                 intent = rememberIntent(
                     Intent.ACTION_VIEW,
-                    "https://github.com/mkckr0/audio-share/releases/tag/v${BuildConfig.VERSION_NAME}"
+                    context.getString(R.string.version_release_url, BuildConfig.VERSION_NAME)
                 ),
             )
         }

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{1E40AC74-3200-4F7F-A728-B76DB888338A}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{5357F624-307E-4C75-8A7D-22AB5307386B}</UniqueIdentifier>
+      <Extensions>h;hpp</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="..\updater-common\update_security.cpp"><Filter>Source Files</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\updater-common\update_contract.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="..\updater-common\update_public_key.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="..\updater-common\update_security.hpp"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="resource.h"><Filter>Header Files</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AudioShareUpdater.rc" />
+  </ItemGroup>
+</Project>

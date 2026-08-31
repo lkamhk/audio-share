@@ -80,6 +80,9 @@
     <ClInclude Include="resource.h">
       <Filter>res</Filter>
     </ClInclude>
+    <ClInclude Include="..\updater-common\update_contract.hpp">
+      <Filter>mfc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AudioShareServer.cpp">
@@ -116,6 +119,9 @@
       <Filter>mfc</Filter>
     </ClCompile>
     <ClCompile Include="util.cpp">
+      <Filter>mfc</Filter>
+    </ClCompile>
+    <ClCompile Include="UpdateClient.cpp">
       <Filter>mfc</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,0 +1,6 @@
+{
+  "supabaseProjectRef": "nfqkislweudltvckonog",
+  "channel": "audio-share-server-stable",
+  "privateKeyPath": "...\\audio-share-updater.p8",
+  "dropboxCopyDestination": "...\\AudioShare\\releases"
+}

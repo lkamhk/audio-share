@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CTabPanel.h"
+#include <atomic>
 
 // CAppSettingsTabPanel dialog
 
@@ -31,6 +32,7 @@ public:
 	afx_msg void OnBnClickedWhenCloseButton(UINT nID);
 	afx_msg void OnBnClickedButtonUpdate();
 	void CheckForUpdate(bool bPromptError);
+	afx_msg LRESULT OnUpdateChecked(WPARAM wParam, LPARAM lParam);
 
 public:
 	LPCWSTR m_lpszSection;
@@ -48,6 +50,7 @@ public:
 	BOOL m_bAutoRun;
 	// auto check for update
 	BOOL m_bAutoUpdate;
+	std::atomic_bool m_updateCheckRunning{ false };
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	CComboBox m_comboLanguage;
 	afx_msg void OnCbnSelchangeComboLanguage();

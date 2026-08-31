@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 project(audio-share
-	VERSION 0.3.4
-	HOMEPAGE_URL "https://github.com/mkckr0/audio-share"
+	VERSION 0.4.8
+	HOMEPAGE_URL "https://github.com/lkamhk/audio-share"
 )
 
 set(CMAKE_CXX_STANDARD 20)
